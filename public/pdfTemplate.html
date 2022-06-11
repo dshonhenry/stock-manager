@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head> 
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            .page {
+                padding: 0.2in 0.2in 0.1in 0.2in;
+                font-family:Helvetica;
+                page-break-after:always; 
+                height: 98vh; 
+                box-sizing: 
+                border-box; 
+                display: flex; 
+                flex-direction: column;
+            }
+            th{
+                text-align: left;
+            }
+            table, th, td {
+                border: 1px solid black;
+                border-collapse: collapse;
+            }
+            th, td {
+                padding: 0.05in;
+            }
+            h1 {
+                margin-bottom: 0.1in;
+            }
+            .itemName-cell{width: 3.5in;}
+            .middle {text-align: center;}
+            .right {text-align: right;}
+        </style>
+    </head>
+    <body></body>
+    <script>
+        const stock = window.api.getStock();
+        let snacks = stock.snacks;
+        let misc= stock.misc;
+        let powders = stock.powders;
+        snacks.sort((a,b) => a.name.localeCompare(b.name))
+        misc.sort((a,b) => a.name.localeCompare(b.name))
+        powders.sort((a,b) => a.name.localeCompare(b.name))
+        const ROW_COUNT = 33;
+        const MISC_PAGE_AMOUNT = Math.ceil(misc.length / ROW_COUNT)
+        const SNACKS_PAGE_AMOUNT = Math.ceil(snacks.length / ROW_COUNT)
+        const POWDERS_PAGE_AMOUNT = Math.ceil(powders.length / ROW_COUNT)
+        let pages = []
+        //let page = document.createElement('div');
+        //page.style.cssText = PAGE_STYLE;
+
+        const createPage = (title, pageNumber, list, hasWeight=false) => {
+            let page = document.createElement('div');
+            page.className = "page"
+            let titleElement = document.createElement('h1')
+            titleElement.innerHTML = title
+            titleElement.align = 'center'
+            page.appendChild(titleElement)
+            let table= document.createElement('table')
+            let headings = table.insertRow();
+            headings.innerHTML = `<th class='itemName-cell'>Item</th><th>Price</th>${hasWeight?'<th>Weigth</th>' : ''} <th>In Store</th><th>In Storage</th>`
+            list.forEach( item => {
+                let upperName = [];
+                item.name.split(" ").forEach(name=>upperName.push(name.charAt(0).toUpperCase() + name.slice(1)))
+                let tr = table.insertRow();
+                tr.innerHTML = `<td class='itemName-cell'>${upperName.join(" ")}</td><td class='right'>${item.price.toFixed(2)}</td> ${hasWeight?'<td class="middle">'+item.weight+'</td>' : ''}<td class="middle">${item.inStore}</td><td class="middle">${item.inStorage}</td>`
+            })
+            page.appendChild(table)
+            let pageNumberElement = document.createElement('p');
+            pageNumberElement.innerText = pageNumber
+            pageNumberElement.style.cssText = "text-align: right; margin:0px; margin-top:auto;"
+            page.append(pageNumberElement)
+            return page;
+        }
+
+        for(let i = 0; i<MISC_PAGE_AMOUNT; i++) {
+            let slice = misc.slice(i*ROW_COUNT, (i*ROW_COUNT+ROW_COUNT))
+            pages.push(createPage('Miscellaneous', pages.length+1, slice));
+        }
+        for(let i = 0; i<SNACKS_PAGE_AMOUNT; i++) {
+            let slice = snacks.slice(i*ROW_COUNT, (i*ROW_COUNT+ROW_COUNT))
+            pages.push(createPage('Snacks', pages.length+1, slice));
+        }
+        for(let i = 0; i<POWDERS_PAGE_AMOUNT; i++) {
+            let slice = powders.slice(i*ROW_COUNT, (i*ROW_COUNT+ROW_COUNT))
+            pages.push(createPage('Powders', pages.length+1, slice, true));
+        }
+
+        pages.forEach(page => {
+            document.body.appendChild(page)        
+        });
+        
+        
+    </script>
+</html>
